@@ -62,7 +62,7 @@ export class FinanceService {
       };
     } catch (error) {
       logger.error(
-        `Failed to fetch market data for symbol: ${normalizedSymbol}`,
+        `Failed to fetch market data for symbol: ${originalSymbol}`,
         error,
         { symbol: yahooTicker },
       );

@@ -38,6 +38,12 @@ const COLUMN_ALIASES: Record<StockColumnKey, string[]> = {
   quantity: ["qty", "quantity", "shares", "units", "no of shares"],
 };
 
+/**
+ * After real portfolio rows have been seen, this many consecutive empty rows
+ * means the sheet body has ended (remaining rows are trailing blanks / formatting).
+ */
+const MAX_CONSECUTIVE_EMPTY_ROWS_AFTER_DATA = 10;
+
 const normalizeCellValue = (value: unknown): string => {
   if (value === null || value === undefined) {
     return "";
@@ -196,6 +202,66 @@ const parseStockRow = (
 };
 
 /**
+ * Shrinks `worksheet['!ref']` to the last row/column that actually holds a
+ * non-empty cell value.
+ *
+ * Many portfolio workbooks keep a huge formatted range (e.g. A1:AI970) even
+ * when meaningful data ends near row ~40. Without trimming, `sheet_to_json`
+ * materializes every row in that range — thousands of empty arrays — which
+ * wastes memory and iteration time.
+ */
+const trimWorksheetToContent = (worksheet: XLSX.WorkSheet): void => {
+  const ref = worksheet["!ref"];
+
+  if (!ref) {
+    return;
+  }
+
+  const originalRange = XLSX.utils.decode_range(ref);
+  let maxRow = originalRange.s.r;
+  let maxCol = originalRange.s.c;
+  let foundContent = false;
+
+  for (const cellAddress of Object.keys(worksheet)) {
+    // Skip SheetJS metadata keys (!ref, !margins, !cols, etc.)
+    if (cellAddress.startsWith("!")) {
+      continue;
+    }
+
+    const cell = worksheet[cellAddress];
+    const rawValue = cell?.v ?? cell?.w ?? "";
+
+    if (
+      rawValue === null ||
+      rawValue === undefined ||
+      String(rawValue).trim() === ""
+    ) {
+      continue;
+    }
+
+    const { r, c } = XLSX.utils.decode_cell(cellAddress);
+    foundContent = true;
+
+    if (r > maxRow) {
+      maxRow = r;
+    }
+
+    if (c > maxCol) {
+      maxCol = c;
+    }
+  }
+
+  if (!foundContent) {
+    return;
+  }
+
+  worksheet["!ref"] = XLSX.utils.encode_range({
+    s: originalRange.s,
+    e: { r: maxRow, c: maxCol },
+  });
+};
+
+/**
  * Reads a portfolio Excel file and converts rows into strongly typed stock objects.
  */
 export const parsePortfolioExcel = (filePath: string): PortfolioStock[] => {
@@ -226,6 +292,11 @@ export const parsePortfolioExcel = (filePath: string): PortfolioStock[] => {
   }
 
   const worksheet = workbook.Sheets[sheetName];
+
+  // Optimization: collapse the declared range before JSON conversion so we
+  // never allocate/iterate thousands of trailing blank/formatted rows.
+  trimWorksheetToContent(worksheet);
+
   const rows = XLSX.utils.sheet_to_json<unknown[]>(worksheet, {
     header: 1,
     defval: "",
@@ -240,14 +311,26 @@ export const parsePortfolioExcel = (filePath: string): PortfolioStock[] => {
   let currentSector = "";
   let columnMap: ColumnMap | null = null;
   let hasValidHeader = false;
+  // Tracks blank-row runs only after we have already parsed at least one stock.
+  let consecutiveEmptyRows = 0;
 
   for (const row of rows) {
     const normalizedRow = Array.isArray(row) ? row : [];
 
-    console.log(normalizedRow);
     if (isEmptyRow(normalizedRow)) {
+      // Early exit: enough blanks after real data ⇒ rest of sheet is noise.
+      if (portfolioStocks.length > 0) {
+        consecutiveEmptyRows += 1;
+
+        if (consecutiveEmptyRows >= MAX_CONSECUTIVE_EMPTY_ROWS_AFTER_DATA) {
+          break;
+        }
+      }
+
       continue;
     }
+
+    consecutiveEmptyRows = 0;
 
     if (isSectorHeaderRow(normalizedRow)) {
       currentSector = extractSectorName(normalizedRow);
@@ -260,7 +343,13 @@ export const parsePortfolioExcel = (filePath: string): PortfolioStock[] => {
       continue;
     }
 
+    // A "Total" / "Total …" label marks the end of the portfolio body.
+    // Skip remaining worksheet rows (often empty formatting below the total).
     if (isTotalRow(normalizedRow)) {
+      if (portfolioStocks.length > 0) {
+        break;
+      }
+
       continue;
     }
 

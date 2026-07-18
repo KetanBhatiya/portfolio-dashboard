@@ -9,6 +9,7 @@ import {
   type TooltipProps,
 } from "recharts";
 
+import { Card } from "@/src/components/common/Card";
 import type { SectorAllocationSummary } from "@/src/utils/groupPortfolioBySector";
 import { formatCurrency, formatPercentage } from "@/utils/format";
 
@@ -50,33 +51,38 @@ function PieTooltip({ active, payload }: TooltipProps<number, string>) {
 
 export function PortfolioPieChart({ sectors }: PortfolioPieChartProps) {
   return (
-    <div className="h-80 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <Card
+      ariaLabel="Sector allocation pie chart"
+      className="flex h-80 flex-col"
+    >
       <h3 className="mb-2 text-sm font-medium text-zinc-700">
         Sector Allocation
       </h3>
-      <ResponsiveContainer width="100%" height="90%">
-        <PieChart>
-          <Pie
-            data={sectors}
-            dataKey="portfolioWeight"
-            nameKey="sectorName"
-            cx="50%"
-            cy="50%"
-            outerRadius="70%"
-            label={({ sectorName, portfolioWeight }) =>
-              `${sectorName} ${Number(portfolioWeight).toFixed(2)}%`
-            }
-          >
-            {sectors.map((sector, index) => (
-              <Cell
-                key={sector.sectorName}
-                fill={CHART_COLORS[index % CHART_COLORS.length]}
-              />
-            ))}
-          </Pie>
-          <Tooltip content={<PieTooltip />} />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
+      <div className="min-h-0 flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={sectors}
+              dataKey="portfolioWeight"
+              nameKey="sectorName"
+              cx="50%"
+              cy="50%"
+              outerRadius="70%"
+              label={({ sectorName, portfolioWeight }) =>
+                `${sectorName} ${Number(portfolioWeight).toFixed(2)}%`
+              }
+            >
+              {sectors.map((sector, index) => (
+                <Cell
+                  key={sector.sectorName}
+                  fill={CHART_COLORS[index % CHART_COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip content={<PieTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </Card>
   );
 }

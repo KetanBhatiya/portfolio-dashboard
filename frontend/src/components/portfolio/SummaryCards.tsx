@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { SectionHeader } from "@/src/components/common/SectionHeader";
 import { SummaryCard } from "@/src/components/common/SummaryCard";
 import type { PortfolioHolding } from "@/types/portfolio";
 import {
@@ -20,7 +21,7 @@ function InvestmentIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      className="h-6 w-6"
+      className="h-5 w-5"
       aria-hidden="true"
     >
       <path
@@ -40,7 +41,7 @@ function PortfolioValueIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      className="h-6 w-6"
+      className="h-5 w-5"
       aria-hidden="true"
     >
       <path
@@ -60,7 +61,7 @@ function GainLossIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      className="h-6 w-6"
+      className="h-5 w-5"
       aria-hidden="true"
     >
       <path
@@ -80,7 +81,7 @@ function HoldingsIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      className="h-6 w-6"
+      className="h-5 w-5"
       aria-hidden="true"
     >
       <path
@@ -95,6 +96,7 @@ function HoldingsIcon() {
 interface SummaryItem {
   title: string;
   value: string;
+  subtitle: string;
   icon: ReactNode;
   valueColor?: string;
 }
@@ -122,35 +124,44 @@ export function SummaryCards({ holdings }: SummaryCardsProps) {
   const cards: SummaryItem[] = [
     {
       title: "Total Investment",
+      subtitle: "Capital deployed across holdings",
       value: formatCurrency(totalInvestment),
       icon: <InvestmentIcon />,
     },
     {
       title: "Current Portfolio Value",
+      subtitle: "Marked-to-market value",
       value: formatCurrency(currentPortfolioValue),
       icon: <PortfolioValueIcon />,
     },
     {
       title: "Total Gain/Loss",
+      subtitle: "Unrealized performance",
       value: formatCurrency(totalGainLoss),
       icon: <GainLossIcon />,
       valueColor: gainLossClassName(totalGainLoss),
     },
     {
       title: "Total Holdings",
+      subtitle: "Stocks in portfolio",
       value: formatNumber(totalHoldings),
       icon: <HoldingsIcon />,
     },
   ];
 
   return (
-    <section className="w-full">
-      <h2 className="mb-3 text-lg font-semibold">Summary</h2>
+    <section className="w-full" aria-labelledby="summary-heading">
+      <SectionHeader
+        id="summary-heading"
+        title="Summary"
+        subtitle="Key portfolio metrics at a glance"
+      />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <SummaryCard
             key={card.title}
             title={card.title}
+            subtitle={card.subtitle}
             value={card.value}
             icon={card.icon}
             valueColor={card.valueColor}

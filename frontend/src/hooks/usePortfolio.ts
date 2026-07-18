@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getPortfolio } from "../api/portfolio.api";
 
 export const usePortfolio = () => {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["portfolio"],
     queryFn: getPortfolio,
   });
@@ -14,5 +14,6 @@ export const usePortfolio = () => {
     data,
     loading: isLoading,
     error,
+    refetch,
   };
 };

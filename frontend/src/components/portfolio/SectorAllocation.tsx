@@ -1,5 +1,7 @@
-import type { PortfolioHolding } from "@/types/portfolio";
+import { Card } from "@/src/components/common/Card";
+import { SectionHeader } from "@/src/components/common/SectionHeader";
 import { groupPortfolioBySector } from "@/src/utils/groupPortfolioBySector";
+import type { PortfolioHolding } from "@/types/portfolio";
 import {
   formatCurrency,
   formatNumber,
@@ -21,14 +23,19 @@ export function SectorAllocation({ holdings }: SectorAllocationProps) {
   const sectors = groupPortfolioBySector(holdings);
 
   return (
-    <section className="w-full">
-      <h2 className="mb-3 text-lg font-semibold">Sector Allocation</h2>
+    <section className="w-full" aria-labelledby="sector-allocation-heading">
+      <SectionHeader
+        id="sector-allocation-heading"
+        title="Sector Allocation"
+        subtitle="How your capital is distributed across sectors"
+      />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {sectors.map((sector) => (
-          <article
+          <Card
             key={sector.sectorName}
-            className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
+            ariaLabel={`${sector.sectorName} sector summary`}
+            className="transition duration-200 hover:shadow-md"
           >
             <h3 className="text-base font-semibold text-zinc-900">
               {sector.sectorName}
@@ -72,7 +79,7 @@ export function SectorAllocation({ holdings }: SectorAllocationProps) {
                 </dd>
               </div>
             </dl>
-          </article>
+          </Card>
         ))}
       </div>
     </section>

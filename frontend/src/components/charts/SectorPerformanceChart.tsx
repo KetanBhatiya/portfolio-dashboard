@@ -12,6 +12,7 @@ import {
   type TooltipProps,
 } from "recharts";
 
+import { Card } from "@/src/components/common/Card";
 import type { SectorAllocationSummary } from "@/src/utils/groupPortfolioBySector";
 import { formatCurrency } from "@/utils/format";
 
@@ -44,49 +45,54 @@ export function SectorPerformanceChart({
   sectors,
 }: SectorPerformanceChartProps) {
   return (
-    <div className="h-80 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <Card
+      ariaLabel="Sector performance bar chart"
+      className="flex h-80 flex-col"
+    >
       <h3 className="mb-2 text-sm font-medium text-zinc-700">
         Sector Performance
       </h3>
-      <ResponsiveContainer width="100%" height="90%">
-        <BarChart
-          data={sectors}
-          margin={{ top: 8, right: 8, left: 8, bottom: 48 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
-          <XAxis
-            dataKey="sectorName"
-            tick={{ fontSize: 12 }}
-            interval={0}
-            angle={-25}
-            textAnchor="end"
-            height={60}
-          />
-          <YAxis
-            tick={{ fontSize: 12 }}
-            tickFormatter={(value: number) =>
-              new Intl.NumberFormat("en-IN", {
-                notation: "compact",
-                maximumFractionDigits: 1,
-              }).format(value)
-            }
-          />
-          <Tooltip content={<BarTooltip />} />
-          <Legend />
-          <Bar
-            dataKey="totalInvestment"
-            name="Investment"
-            fill="#2563eb"
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar
-            dataKey="currentPortfolioValue"
-            name="Current Value"
-            fill="#16a34a"
-            radius={[4, 4, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+      <div className="min-h-0 flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={sectors}
+            margin={{ top: 8, right: 8, left: 8, bottom: 48 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
+            <XAxis
+              dataKey="sectorName"
+              tick={{ fontSize: 12 }}
+              interval={0}
+              angle={-25}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis
+              tick={{ fontSize: 12 }}
+              tickFormatter={(value: number) =>
+                new Intl.NumberFormat("en-IN", {
+                  notation: "compact",
+                  maximumFractionDigits: 1,
+                }).format(value)
+              }
+            />
+            <Tooltip content={<BarTooltip />} />
+            <Legend />
+            <Bar
+              dataKey="totalInvestment"
+              name="Investment"
+              fill="#2563eb"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="currentPortfolioValue"
+              name="Current Value"
+              fill="#16a34a"
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </Card>
   );
 }

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { QueryProvider } from "@/src/providers/QueryProvider";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,12 +20,18 @@ export const metadata: Metadata = {
   description: "Full Stack Portfolio Dashboard",
 };
 
-export default function RootLayout({}: Readonly<{
+export default function RootLayout({
+  children,
+}: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
-      <body></body>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

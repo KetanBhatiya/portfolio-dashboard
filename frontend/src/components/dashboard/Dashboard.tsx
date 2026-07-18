@@ -1,5 +1,6 @@
 "use client";
 
+import { ChartsSection } from "@/src/components/charts/ChartsSection";
 import { PortfolioHeader } from "@/src/components/portfolio/PortfolioHeader";
 import { PortfolioTable } from "@/src/components/portfolio/PortfolioTable";
 import { SectorAllocation } from "@/src/components/portfolio/SectorAllocation";
@@ -29,9 +30,10 @@ export function Dashboard() {
   }
 
   return (
-    <main>
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
       <PortfolioHeader />
       <SummaryCards holdings={holdings} />
+      <ChartsSection holdings={holdings} />
       <SectorAllocation holdings={holdings} />
       <PortfolioTable holdings={holdings} />
     </main>

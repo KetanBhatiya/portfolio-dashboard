@@ -4,46 +4,154 @@ export interface PortfolioTableProps {
   holdings: PortfolioHolding[];
 }
 
+const NULL_DISPLAY = "--";
+
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 2,
+});
+
+const numberFormatter = new Intl.NumberFormat("en-IN", {
+  maximumFractionDigits: 2,
+});
+
+function formatCurrency(value: number | null): string {
+  if (value === null) return NULL_DISPLAY;
+  return currencyFormatter.format(value);
+}
+
+function formatPercentage(value: number | null): string {
+  if (value === null) return NULL_DISPLAY;
+  return `${value.toFixed(2)}%`;
+}
+
+function formatNumber(value: number | null): string {
+  if (value === null) return NULL_DISPLAY;
+  return numberFormatter.format(value);
+}
+
+function formatMarketCap(value: number | null): string {
+  if (value === null) return NULL_DISPLAY;
+
+  const CRORE = 10_000_000;
+  const LAKH = 100_000;
+
+  if (Math.abs(value) >= CRORE) {
+    return `₹${numberFormatter.format(value / CRORE)} Cr`;
+  }
+
+  if (Math.abs(value) >= LAKH) {
+    return `₹${numberFormatter.format(value / LAKH)} L`;
+  }
+
+  return currencyFormatter.format(value);
+}
+
+function gainLossClassName(value: number | null): string {
+  if (value === null) return "text-zinc-500";
+  if (value > 0) return "text-green-600";
+  if (value < 0) return "text-red-600";
+  return "text-zinc-500";
+}
+
 export function PortfolioTable({ holdings }: PortfolioTableProps) {
   return (
-    <section>
-      <h2>Portfolio Holdings</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Stock</th>
-            <th>Symbol</th>
-            <th>Sector</th>
-            <th>Quantity</th>
-            <th>Purchase Price</th>
-            <th>Investment</th>
-            <th>Portfolio %</th>
-            <th>CMP</th>
-            <th>Present Value</th>
-            <th>Gain/Loss</th>
-            <th>P/E</th>
-            <th>Market Cap</th>
-          </tr>
-        </thead>
-        <tbody>
-          {holdings.map((holding) => (
-            <tr key={holding.symbol}>
-              <td>{holding.stockName}</td>
-              <td>{holding.symbol}</td>
-              <td>{holding.sector}</td>
-              <td>{holding.quantity}</td>
-              <td>{holding.purchasePrice}</td>
-              <td>{holding.investment}</td>
-              <td>{holding.portfolioPercentage}</td>
-              <td>{holding.currentMarketPrice ?? "—"}</td>
-              <td>{holding.presentValue ?? "—"}</td>
-              <td>{holding.gainLoss ?? "—"}</td>
-              <td>{holding.peRatio ?? "—"}</td>
-              <td>{holding.marketCap ?? "—"}</td>
+    <section className="w-full">
+      <h2 className="mb-3 text-lg font-semibold">Portfolio Holdings</h2>
+
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-[1100px] w-full border-collapse text-left text-sm">
+          <thead className="sticky top-0 z-10 bg-white">
+            <tr className="border-b border-zinc-200">
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Stock Name
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Symbol
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Sector
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Purchase Price
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Quantity
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Investment
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Portfolio %
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Current Price
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Present Value
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Gain/Loss
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                P/E Ratio
+              </th>
+              <th className="whitespace-nowrap bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-800">
+                Market Cap
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {holdings.map((holding, index) => (
+              <tr
+                key={`${holding.symbol}-${index}`}
+                className="border-b border-zinc-100"
+              >
+                <td className="whitespace-nowrap px-3 py-2">
+                  {holding.stockName}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {holding.symbol}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {holding.sector}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatCurrency(holding.purchasePrice)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatNumber(holding.quantity)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatCurrency(holding.investment)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatPercentage(holding.portfolioPercentage)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatCurrency(holding.currentMarketPrice)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatCurrency(holding.presentValue)}
+                </td>
+                <td
+                  className={`whitespace-nowrap px-3 py-2 ${gainLossClassName(holding.gainLoss)}`}
+                >
+                  {formatCurrency(holding.gainLoss)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatNumber(holding.peRatio)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {formatMarketCap(holding.marketCap)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

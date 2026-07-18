@@ -9,7 +9,6 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  type TooltipProps,
 } from "recharts";
 
 import { Card } from "@/src/components/common/Card";
@@ -20,10 +19,18 @@ export interface SectorPerformanceChartProps {
   sectors: SectorAllocationSummary[];
 }
 
-function BarTooltip({ active, payload, label }: TooltipProps<number, string>) {
+interface ChartTooltipProps {
+  active?: boolean;
+  label?: string | number;
+  payload?: Array<{
+    payload: SectorAllocationSummary;
+  }>;
+}
+
+function BarTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
 
-  const sector = payload[0].payload as SectorAllocationSummary;
+  const sector = payload[0].payload;
 
   return (
     <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm">

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  type TooltipProps,
-} from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import { Card } from "@/src/components/common/Card";
 import type { SectorAllocationSummary } from "@/src/utils/groupPortfolioBySector";
@@ -28,10 +21,17 @@ const CHART_COLORS = [
   "#4f46e5",
 ];
 
-function PieTooltip({ active, payload }: TooltipProps<number, string>) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    payload: SectorAllocationSummary;
+  }>;
+}
+
+function PieTooltip({ active, payload }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
 
-  const sector = payload[0].payload as SectorAllocationSummary;
+  const sector = payload[0].payload;
 
   return (
     <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm">
@@ -68,9 +68,11 @@ export function PortfolioPieChart({ sectors }: PortfolioPieChartProps) {
               cx="50%"
               cy="50%"
               outerRadius="70%"
-              label={({ sectorName, portfolioWeight }) =>
-                `${sectorName} ${Number(portfolioWeight).toFixed(2)}%`
-              }
+              label={(props) => {
+                const sectorName = String(props.name ?? "");
+                const portfolioWeight = Number(props.value ?? 0);
+                return `${sectorName} ${portfolioWeight.toFixed(2)}%`;
+              }}
             >
               {sectors.map((sector, index) => (
                 <Cell
